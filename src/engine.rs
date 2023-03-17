@@ -1,13 +1,13 @@
-use monster_chess::board::{game::{Game, GameResults}, Board, actions::Action};
+use monster_chess::board::{game::{Game, GameResults}, Board, actions::{Action, Move}};
 
 pub struct Engine<const T: usize> {
-    game: Game<T>,
-    behavior: Box<dyn EngineBehavior<T>>
+    pub game: Game<T>,
+    pub behavior: Box<dyn EngineBehavior<T>>
 }
 
 pub struct PlayerTime {
-    time_ms: u128,
-    inc_ms: u128
+    pub time_ms: u128,
+    pub inc_ms: u128
 }
 
 pub enum TimeControl {
@@ -15,10 +15,10 @@ pub enum TimeControl {
 }
 
 pub struct MoveSelectionResults {
-    best_move: Action,
+    pub best_move: Move,
 
-    // Evaluation is in terms of centipieces (where one centi-piece is the lowest-value piece of the game)
-    evaluation: u64
+    /// Evaluation is in terms of centipieces (where one centi-piece is the lowest-value piece of the game)
+    pub evaluation: u64
 }
 
 pub enum InitialPos<'a> {
@@ -26,23 +26,39 @@ pub enum InitialPos<'a> {
     Fen(&'a str)
 }
 
+pub struct Info<'a> {
+    pub depth: Option<u32>,
+    /// Score is in terms of centipieces (where one centi-piece is the lowest-value piece of the game)
+    pub score: Option<u32>,
+    pub pv: Option<&'a str>
+}
+
 pub trait EngineBehavior<const T: usize> {
-    fn is_over(&self, engine: &Engine<T>, board: &mut Board<T>) -> bool {
-        match self.get_result(engine, board) {
+    // UGI -> Engine
+
+    fn init(&mut self);
+    fn is_ready(&mut self) -> bool;
+
+    fn is_over(&mut self, game: &Game<T>, board: &mut Board<T>) -> bool {
+        match self.get_result(game, board) {
             GameResults::Ongoing => false,
             _ => true
         }
     }
 
-    fn get_result(&self, engine: &Engine<T>, board: &mut Board<T>) -> GameResults {
+    fn get_result(&mut self, game: &Game<T>, board: &mut Board<T>) -> GameResults {
         let legal_moves = board.generate_legal_moves(0);
-        engine.game.resolution.resolution(board, &legal_moves)
+        game.resolution.resolution(board, &legal_moves)
     }
 
-    fn select_move(&self, engine: &Engine<T>, board: &mut Board<T>, time_control: TimeControl) -> MoveSelectionResults;
-    fn stop_search(&self, engine: &Engine<T>);
+    fn get_turn(&mut self, board: &Board<T>) -> u32 {
+        board.state.moving_team
+    }
 
-    fn position<'a>(&self, engine: &'a Engine<T>, initial_pos: InitialPos<'a>, actions: Vec<String>) -> Board<'a, T> {
+    fn select_move(&mut self, board: &mut Board<T>, time_control: TimeControl) -> MoveSelectionResults;
+    fn stop_search(&mut self);
+
+    fn position<'a>(&mut self, engine: &'a Engine<T>, initial_pos: InitialPos<'a>, actions: Vec<String>) -> Board<'a, T> {
         let mut board = match initial_pos {
             InitialPos::Fen(fen) => engine.game.from_fen(&fen),
             InitialPos::Startpos => engine.game.default()
@@ -56,5 +72,37 @@ pub trait EngineBehavior<const T: usize> {
         }
 
         board
+    }
+
+    // Engine -> UGI
+
+    fn info(&mut self, info: Info) {
+        print!("info");
+        
+        if let Some(depth) = info.depth {
+            print!(" depth {depth}");
+        }
+
+        if let Some(eval) = info.score {
+            print!(" eval cp {eval}");
+        }
+
+        if let Some(pv) = info.pv {
+            print!(" pv {pv}");
+        }
+
+        println!();
+    }
+
+    fn bestmove(&mut self, board: &Board<T>, action: Move) {
+        println!("bestmove {}", board.encode_action(&action));
+    }
+
+    fn ugiok(&mut self) {
+        println!("ugiok");
+    }
+
+    fn readyok(&mut self) {
+        println!("readyok");
     }
 }
