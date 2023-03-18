@@ -1,8 +1,14 @@
 use monster_chess::board::{game::{Game, GameResults}, Board, actions::{Action, Move}};
+use std::fmt::Display;
 
 pub struct Engine<const T: usize> {
     pub game: Game<T>,
     pub behavior: Box<dyn EngineBehavior<T>>
+}
+
+pub struct EngineInfo<'a> {
+    pub name: &'a str,
+    pub author: &'a str
 }
 
 pub struct PlayerTime {
@@ -36,7 +42,7 @@ pub struct Info<'a> {
 pub trait EngineBehavior<const T: usize> {
     // UGI -> Engine
 
-    fn init(&mut self);
+    fn get_engine_info(&mut self) -> EngineInfo;
     fn is_ready(&mut self) -> bool;
 
     fn is_over(&mut self, game: &Game<T>, board: &mut Board<T>) -> bool {
@@ -76,6 +82,13 @@ pub trait EngineBehavior<const T: usize> {
 
     // Engine -> UGI
 
+    fn init(&mut self) {
+        let engine_info = self.get_engine_info();
+        println!("id name {}", engine_info.name);
+        println!("id author {}", engine_info.author);
+        self.ugiok();
+    }
+
     fn info(&mut self, info: Info) {
         print!("info");
         
@@ -104,5 +117,13 @@ pub trait EngineBehavior<const T: usize> {
 
     fn readyok(&mut self) {
         println!("readyok");
+    }
+    
+    fn response(&mut self, display: &str) {
+        println!("response {display}");
+    }
+
+    fn response_bool(&mut self, display: bool) {
+        self.response(&display.to_string())
     }
 }

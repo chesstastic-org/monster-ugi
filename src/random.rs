@@ -1,7 +1,7 @@
 use monster_chess::board::Board;
 use rand::{seq::SliceRandom, rngs::ThreadRng};
 
-use crate::engine::{EngineBehavior, Engine, TimeControl, MoveSelectionResults};
+use crate::engine::{EngineBehavior, Engine, TimeControl, MoveSelectionResults, EngineInfo};
 
 pub struct RandomEngine<const T: usize>(pub ThreadRng);
 
@@ -14,9 +14,11 @@ impl<const T: usize> EngineBehavior<T> for RandomEngine<T> {
         }
     }
 
-    fn init(&mut self) {
-        println!("id name RANDOM MONSTER");
-        println!("id author Corman");
+    fn get_engine_info(&mut self) -> EngineInfo {
+        EngineInfo {
+            name: "Random",
+            author: "Corman"
+        }
     }
 
     fn is_ready(&mut self) -> bool {

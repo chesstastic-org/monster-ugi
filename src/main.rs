@@ -1,6 +1,6 @@
 use engine::{EngineBehavior, Engine, TimeControl, MoveSelectionResults};
 use monster_chess::board::Board;
-use monster_chess::board::game::NORMAL_MODE;
+use monster_chess::board::game::{NORMAL_MODE, GameResults};
 use monster_chess::games::chess::Chess;
 use rand::thread_rng;
 use random::RandomEngine;
@@ -29,7 +29,6 @@ fn main() {
     }
 
     engine.behavior.init();
-    engine.behavior.ugiok();
 
     for line in lines {
         let mut line = line.expect("User input error.");
@@ -81,6 +80,30 @@ fn main() {
             }
         }
 
-        // TODO: Implement query
+        if line.starts_with("query ") {
+            match &mut board {
+                Some(board) => {
+                    line = line.strip_prefix("query ").expect("String dynamics changed throughout spacetime.").to_string();
+                    if line == "gameover" {
+                        let is_over = engine.behavior.is_over(&engine.game, board);
+                        engine.behavior.response_bool(is_over);
+                    } else if line == "p1turn" {
+                        let first_turn = engine.behavior.get_turn(board) == 0;
+                        engine.behavior.response_bool(first_turn);
+                    } else if line == "result" {
+                        let result = match engine.behavior.get_result(&engine.game, board) {
+                            GameResults::Win(team) => format!("p{}win", team + 1),
+                            GameResults::Draw => "draw".to_string(),
+                            GameResults::Ongoing => "none".to_string()
+                        };
+                        engine.behavior.response(&result);
+                    }
+                }
+                None => {
+                    println!("Cannot run 'query' if no board has been initialized with the 'position' command.");
+                    return;
+                }
+            }
+        }
     }
 }
