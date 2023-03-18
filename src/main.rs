@@ -2,6 +2,7 @@ use engine::{EngineBehavior, Engine, TimeControl, MoveSelectionResults};
 use monster_chess::board::Board;
 use monster_chess::board::game::{NORMAL_MODE, GameResults};
 use monster_chess::games::chess::Chess;
+use crate::engine::PlayerTime;
 use rand::thread_rng;
 use random::RandomEngine;
 
@@ -65,8 +66,35 @@ fn main() {
             continue;
         }
 
-        if line.starts_with("go") {
-            // TODO: Actually implement TCs
+        if line.starts_with("go ") {
+            line = line.strip_prefix("go ").expect("String dynamics changed throughout spacetime.").to_string();
+
+            let mut time_control = TimeControl::Infinite;
+            if line.starts_with("p1time") {
+                let info: [ &str; 8 ] = line.split(" ").collect::<Vec<_>>().try_into().expect("Could not convert '{info}' into a time+inc time control.");
+                let [ _, p1time, _, p2time, _, p1inc, _, p2inc ] = info;
+                let [ p1time, p2time, p1inc, p2inc ]: [ u128; 4 ] = [ p1time, p2time, p1inc, p2inc ]
+                    .iter().map(|el| el.parse::<u128>().expect("Could not convert '{info}' into MS for time control"))
+                    .collect::<Vec<_>>().try_into().unwrap();
+                time_control = TimeControl::Timed(vec![ 
+                    PlayerTime { time_ms: p1time, inc_ms: p1inc }, 
+                    PlayerTime { time_ms: p2time, inc_ms: p2inc }
+                ])
+            } else if line.starts_with("movetime ") {
+                line = line.strip_prefix("movetime ").expect("String dynamics changed throughout spacetime.").to_string();
+                let movetime_ms = line.parse::<u128>().expect("Could not convert '{info}' into MS for time control");
+                time_control = TimeControl::MoveTime(movetime_ms);
+            } else if line.starts_with("depth ") {
+                line = line.strip_prefix("depth ").expect("String dynamics changed throughout spacetime.").to_string();
+                let depth = line.parse::<u32>().expect("Could not convert '{info}' into depth for time control");
+                time_control = TimeControl::Depth(depth);
+            } else if line.starts_with("nodes ") {
+                line = line.strip_prefix("nodes ").expect("String dynamics changed throughout spacetime.").to_string();
+                let nodes = line.parse::<u64>().expect("Could not convert '{nodes}' into depth for time control");
+                time_control = TimeControl::Nodes(nodes);
+            }
+            
+            println!("{:?}", time_control);
 
             match &mut board {
                 Some(board) => {

@@ -11,13 +11,19 @@ pub struct EngineInfo<'a> {
     pub author: &'a str
 }
 
+#[derive(Debug)]
 pub struct PlayerTime {
     pub time_ms: u128,
     pub inc_ms: u128
 }
 
+#[derive(Debug)]
 pub enum TimeControl {
-    Timed(Vec<PlayerTime>)
+    Timed(Vec<PlayerTime>),
+    MoveTime(u128),
+    Depth(u32),
+    Nodes(u64),
+    Infinite
 }
 
 pub struct MoveSelectionResults {
