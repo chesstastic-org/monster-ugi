@@ -37,9 +37,14 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
                 line = line.strip_prefix("startpos").expect("String dynamics changed throughout spacetime.").to_string();
                 engine.game.default()
             } else {
-                assert!(line.starts_with("fen"), "'position' has two subcommands: 'position startpos' and 'position fen'. 'position {}' is invalid.", line);
-                line = line.strip_prefix("fen").expect("String dynamics changed throughout spacetime.").to_string();
-                engine.game.default()
+                assert!(line.starts_with("fen "), "'position' has two subcommands: 'position startpos' and 'position fen'. 'position {}' is invalid.", line);
+                line = line.strip_prefix("fen ").expect("String dynamics changed throughout spacetime.").to_string();
+
+                let newline = line.clone();
+                let moves = newline.split(" moves").collect::<Vec<_>>();
+                line = line.strip_prefix(moves[0]).expect("String dynamics changed throughout spacetime.").to_string();
+
+                engine.game.from_fen(moves[0])
             };
 
             if line.starts_with(" moves ") {
@@ -59,7 +64,7 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
             line = line.strip_prefix("go ").expect("String dynamics changed throughout spacetime.").to_string();
 
             let mut time_control = TimeControl::Infinite;
-            if line.starts_with("p1time") {
+            if line.starts_with("p1time") || line.starts_with("wtime") {
                 let info: [ &str; 8 ] = line.split(" ").collect::<Vec<_>>().try_into().expect("Could not convert '{info}' into a time+inc time control.");
                 let [ _, p1time, _, p2time, _, p1inc, _, p2inc ] = info;
                 let [ p1time, p2time, p1inc, p2inc ]: [ u128; 4 ] = [ p1time, p2time, p1inc, p2inc ]
