@@ -60,10 +60,10 @@ pub trait EngineBehavior<const T: usize> {
 
     fn get_result(&mut self, game: &Game<T>, board: &mut Board<T>) -> GameResults {
         let legal_moves = board.generate_legal_moves(0);
-        game.resolution.resolution(board, &legal_moves)
+        game.resolution.resolve(board, &legal_moves)
     }
 
-    fn get_turn(&mut self, board: &Board<T>) -> u32 {
+    fn get_turn(&mut self, board: &Board<T>) -> u16 {
         board.state.moving_team
     }
 
@@ -88,11 +88,11 @@ pub trait EngineBehavior<const T: usize> {
 
     // Engine -> UGI
 
-    fn init(&mut self) {
+    fn init(&mut self, protocol: &str) {
         let engine_info = self.get_engine_info();
         println!("id name {}", engine_info.name);
         println!("id author {}", engine_info.author);
-        self.ugiok();
+        self.ugiok(protocol);
     }
 
     fn info(&mut self, info: Info) {
@@ -117,8 +117,8 @@ pub trait EngineBehavior<const T: usize> {
         println!("bestmove {}", board.encode_action(&action));
     }
 
-    fn ugiok(&mut self) {
-        println!("ugiok");
+    fn ugiok(&mut self, protocol: &str) {
+        println!("{}ok", protocol);
     }
 
     fn readyok(&mut self) {

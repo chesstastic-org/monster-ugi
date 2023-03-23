@@ -1,35 +1,24 @@
-use engine::{EngineBehavior, Engine, TimeControl, MoveSelectionResults};
+use crate::engine::{Engine, TimeControl, MoveSelectionResults, PlayerTime};
+
 use monster_chess::board::Board;
 use monster_chess::board::game::{NORMAL_MODE, GameResults};
-use monster_chess::games::chess::Chess;
-use crate::engine::PlayerTime;
-use rand::thread_rng;
-use random::RandomEngine;
 
 use std::io;
 use std::io::prelude::*;
 
-mod engine;
-mod random;
-
-fn main() {
-    let mut engine = Engine {
-        game: Chess::create(),
-        behavior: Box::new(RandomEngine::<1>(thread_rng())),
-
-    };
-    let mut board: Option<Board<1>> = None;
+pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
+    let mut board: Option<Board<T>> = None;
 
     let stdin = io::stdin();
     let mut lines = stdin.lock().lines();
 
     let protocol = lines.next().expect("No user input.").expect("User input error.");
-    if protocol != "ugi" {
+    if protocol != "ugi" && protocol != "uci" && protocol != "uai" {
         println!("Unknown protocol.");
         return;
     }
 
-    engine.behavior.init();
+    engine.behavior.init(&protocol);
 
     for line in lines {
         let mut line = line.expect("User input error.");
@@ -93,12 +82,10 @@ fn main() {
                 let nodes = line.parse::<u64>().expect("Could not convert '{nodes}' into depth for time control");
                 time_control = TimeControl::Nodes(nodes);
             }
-            
-            println!("{:?}", time_control);
 
             match &mut board {
                 Some(board) => {
-                    let MoveSelectionResults { best_move, .. } = engine.behavior.select_move(board, TimeControl::Timed(vec![]));
+                    let MoveSelectionResults { best_move, .. } = engine.behavior.select_move(board, time_control);
                     engine.behavior.bestmove(board, best_move)
                 }
                 None => {
