@@ -50,5 +50,5 @@ run_ugi(engine);
 
 `monster-ugi` available under the
 [MIT license](https://opensource.org/licenses/MIT). See
-[LICENSE](https://github.com/chesstastic-org/monster-chess/blob/main/LICENSE) for the full
+[LICENSE](https://github.com/chesstastic-org/monster-ugi/blob/main/LICENSE) for the full
 license text.

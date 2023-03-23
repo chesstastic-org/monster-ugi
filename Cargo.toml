@@ -2,6 +2,12 @@
 name = "monster_ugi"
 version = "0.0.1"
 edition = "2021"
+license = "MIT"
+description = "A library that connects a chess engine using the monster-chess movegen library to the UGI protocol."
+repository = "https://github.com/chesstastic-org/monster-ugi"
+readme = "README.md"
+categories = ["games"]
+keywords = ["movegen", "monster-chess", "ugi", "uci", "uai"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
