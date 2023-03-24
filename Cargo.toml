@@ -1,6 +1,6 @@
 [package]
 name = "monster_ugi"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 license = "MIT"
 description = "A library that connects a chess engine using the monster-chess movegen library to the UGI protocol."
@@ -12,5 +12,5 @@ keywords = ["movegen", "monster-chess", "ugi", "uci", "uai"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-monster_chess = "0.0.14"
+monster_chess = "0.0.15"
 rand = "0.8.5"
