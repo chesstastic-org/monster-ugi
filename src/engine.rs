@@ -67,7 +67,7 @@ pub trait EngineBehavior<const T: usize> {
         board.state.moving_team
     }
 
-    fn select_move(&mut self, board: &mut Board<T>, time_control: TimeControl) -> MoveSelectionResults;
+    fn select_move(&mut self, board: &mut Board<T>, time_control: TimeControl, hashes: &Vec<u64>) -> MoveSelectionResults;
     fn stop_search(&mut self);
 
     fn position<'a>(&mut self, engine: &'a Engine<T>, initial_pos: InitialPos<'a>, actions: Vec<String>) -> Board<'a, T> {

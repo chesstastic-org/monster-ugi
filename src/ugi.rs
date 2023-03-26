@@ -8,6 +8,7 @@ use std::io::prelude::*;
 
 pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
     let mut board: Option<Board<T>> = None;
+    let mut hashes: Vec<u64> = vec![];
 
     let stdin = io::stdin();
     let mut lines = stdin.lock().lines();
@@ -47,11 +48,15 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
                 engine.game.from_fen(moves[0])
             };
 
+            hashes.clear();
+            hashes.push(new_board.game.zobrist.compute(&new_board));
+
             if line.starts_with(" moves ") {
                 line = line.strip_prefix(" moves ").expect("String dynamics changed throughout spacetime.").to_string();
                 for action in line.split(" ") {
                     let action = new_board.decode_action(action, NORMAL_MODE).expect(&format!("{} is not a possible move.", action));
                     new_board.make_move(&action);
+                    hashes.push(new_board.game.zobrist.compute(&new_board));
                 }
             }
 
@@ -90,7 +95,7 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
 
             match &mut board {
                 Some(board) => {
-                    let MoveSelectionResults { best_move, .. } = engine.behavior.select_move(board, time_control);
+                    let MoveSelectionResults { best_move, .. } = engine.behavior.select_move(board, time_control, &hashes);
                     engine.behavior.bestmove(board, best_move)
                 }
                 None => {

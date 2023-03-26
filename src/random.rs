@@ -6,7 +6,7 @@ use crate::engine::{EngineBehavior, Engine, TimeControl, MoveSelectionResults, E
 pub struct RandomEngine<const T: usize>(pub ThreadRng);
 
 impl<const T: usize> EngineBehavior<T> for RandomEngine<T> {
-    fn select_move(&mut self, board: &mut Board<T>, time_control: TimeControl) -> MoveSelectionResults {
+    fn select_move(&mut self, board: &mut Board<T>, time_control: TimeControl, hashes: &Vec<u64>) -> MoveSelectionResults {
         let best_move = *board.generate_legal_moves(0).choose(&mut self.0).expect("Could not find a move to pick between for random movegen.");
         MoveSelectionResults {
             best_move,
