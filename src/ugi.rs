@@ -6,6 +6,46 @@ use monster_chess::board::game::{NORMAL_MODE, GameResults};
 use std::io;
 use std::io::prelude::*;
 
+#[derive(Debug)]
+pub struct Chunks<'a, 'b>(Vec<&'a[&'b str]>);
+
+impl Chunks<'_, '_> {
+    pub fn has_named<const T: usize>(&self, names: [ &str; T ]) -> bool {
+        self.0.iter().any(|chunk| names.contains(&chunk[0]))
+    }
+    
+    pub fn get_raw<const T: usize>(&self, names: [ &str; T ]) -> Option<String> {
+        self.0.iter().find(|chunk| names.contains(&chunk[0]))
+            .map(|el| el[1].to_string())
+    }
+    
+    pub fn get_int<const T: usize>(&self, names: [ &str; T ]) -> Option<u128> {
+        self.get_raw(names).map(|raw| {
+            raw
+                .parse::<u128>()
+                .expect("Expected integer argument")
+        })
+    }
+}
+
+mod chunk {
+    pub fn has_named<const T: usize>(chunks: &[&[&str]], names: [ &str; T ]) -> bool {
+        chunks.iter().any(|chunk| names.contains(&chunk[0]))
+    }
+    
+    pub fn get_raw<const T: usize>(chunks: &[&[&str]], names: [ &str; T ]) -> String {
+        chunks.iter().find(|chunk| names.contains(&chunk[0]))
+            .map(|el| el[1].to_string())
+            .expect("Expected argument to be provided")
+    }
+    
+    pub fn get_int<const T: usize>(chunks: &[&[&str]], names: [ &str; T ]) -> u128 {
+        get_raw(chunks, names)
+            .parse::<u128>()
+            .expect("Expected integer argument")
+    }
+}
+
 pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
     let mut board: Option<Board<T>> = None;
     let mut hashes: Vec<u64> = vec![];
@@ -36,23 +76,34 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
 
             let mut new_board = if line.starts_with("startpos") {
                 line = line.strip_prefix("startpos").expect("String dynamics changed throughout spacetime.").to_string();
+
+                let newline = line.clone();
+                let components = newline.split(" moves").collect::<Vec<_>>();
+
+                if components.len() > 1 {
+                    line = format!("moves {}", components[1].trim().to_string())
+                };
                 engine.game.default()
             } else {
                 assert!(line.starts_with("fen "), "'position' has two subcommands: 'position startpos' and 'position fen'. 'position {}' is invalid.", line);
                 line = line.strip_prefix("fen ").expect("String dynamics changed throughout spacetime.").to_string();
 
                 let newline = line.clone();
-                let moves = newline.split(" moves").collect::<Vec<_>>();
-                line = line.strip_prefix(moves[0]).expect("String dynamics changed throughout spacetime.").to_string();
+                let components = newline.split(" moves").collect::<Vec<_>>();
 
-                engine.game.from_fen(moves[0])
+                let position = components[0];
+                if components.len() > 1 {
+                    line = format!("moves {}", components[1].trim().to_string())
+                };
+
+                engine.game.from_fen(&position)
             };
 
             hashes.clear();
             hashes.push(new_board.game.zobrist.compute(&new_board));
 
-            if line.starts_with(" moves ") {
-                line = line.strip_prefix(" moves ").expect("String dynamics changed throughout spacetime.").to_string();
+            if line.starts_with("moves ") {
+                line = line.strip_prefix("moves ").expect("String dynamics changed throughout spacetime.").to_string();
                 for action in line.split(" ") {
                     let action = new_board.decode_action(action, NORMAL_MODE).expect(&format!("{} is not a possible move.", action));
                     new_board.make_move(&action);
@@ -69,27 +120,28 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
             line = line.strip_prefix("go ").expect("String dynamics changed throughout spacetime.").to_string();
 
             let mut time_control = TimeControl::Infinite;
-            if line.starts_with("p1time") || line.starts_with("wtime") {
-                let info: [ &str; 8 ] = line.split(" ").collect::<Vec<_>>().try_into().expect("Could not convert '{info}' into a time+inc time control.");
-                let [ _, p1time, _, p2time, _, p1inc, _, p2inc ] = info;
-                let [ p1time, p2time, p1inc, p2inc ]: [ u128; 4 ] = [ p1time, p2time, p1inc, p2inc ]
-                    .iter().map(|el| el.parse::<u128>().expect("Could not convert '{info}' into MS for time control"))
-                    .collect::<Vec<_>>().try_into().unwrap();
-                time_control = TimeControl::Timed(vec![ 
+
+            let info = line.split(" ").collect::<Vec<_>>();
+            let chunks = Chunks(info.chunks(2).collect::<Vec<_>>());
+
+            if chunks.has_named([ "p1time", "wtime" ]) {
+                let p1time = chunks.get_int([ "p1time", "wtime" ]).expect("Must have p1time");
+                let p2time = chunks.get_int([ "p2time", "btime" ]).expect("Must have p2time");
+                let p1inc = chunks.get_int([ "p2time", "btime" ]).unwrap_or(0);
+                let p2inc = chunks.get_int([ "p2inc", "binc" ]).unwrap_or(0);
+
+                    time_control = TimeControl::Timed(vec![ 
                     PlayerTime { time_ms: p1time, inc_ms: p1inc }, 
                     PlayerTime { time_ms: p2time, inc_ms: p2inc }
-                ])
-            } else if line.starts_with("movetime ") {
-                line = line.strip_prefix("movetime ").expect("String dynamics changed throughout spacetime.").to_string();
-                let movetime_ms = line.parse::<u128>().expect("Could not convert '{info}' into MS for time control");
+                ]);
+            } else if chunks.has_named([ "movetime" ]) {
+                let movetime_ms = chunks.get_int([ "movetime" ]).expect("Must have movetime");
                 time_control = TimeControl::MoveTime(movetime_ms);
-            } else if line.starts_with("depth ") {
-                line = line.strip_prefix("depth ").expect("String dynamics changed throughout spacetime.").to_string();
-                let depth = line.parse::<u32>().expect("Could not convert '{info}' into depth for time control");
+            } else if chunks.has_named([ "depth" ]) {
+                let depth = chunks.get_int([ "depth" ]).expect("Must have depth") as u32;
                 time_control = TimeControl::Depth(depth);
             } else if line.starts_with("nodes ") {
-                line = line.strip_prefix("nodes ").expect("String dynamics changed throughout spacetime.").to_string();
-                let nodes = line.parse::<u64>().expect("Could not convert '{nodes}' into depth for time control");
+                let nodes = chunks.get_int([ "nodes" ]).expect("Must have nodes") as u64;
                 time_control = TimeControl::Nodes(nodes);
             }
 

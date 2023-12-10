@@ -1,3 +1,5 @@
+use std::{thread, time::Duration};
+
 use monster_chess::board::Board;
 use rand::{seq::SliceRandom, rngs::ThreadRng};
 
@@ -7,6 +9,7 @@ pub struct RandomEngine<const T: usize>(pub ThreadRng);
 
 impl<const T: usize> EngineBehavior<T> for RandomEngine<T> {
     fn select_move(&mut self, board: &mut Board<T>, time_control: TimeControl, hashes: &Vec<u64>) -> MoveSelectionResults {
+        thread::sleep(Duration::from_millis(350));
         let best_move = *board.generate_legal_moves(0).choose(&mut self.0).expect("Could not find a move to pick between for random movegen.");
         MoveSelectionResults {
             best_move,
