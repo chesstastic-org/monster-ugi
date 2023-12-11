@@ -88,12 +88,6 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
                 line = line.strip_prefix("moves ")
                     .expect("String dynamics changed throughout spacetime.").to_string();
                 for action in line.split(" ") {
-                    println!("{:?}",
-                        new_board.generate_moves(NORMAL_MODE)
-                            .iter()
-                            .map(|el| new_board.encode_action(el))
-                            .collect::<Vec<_>>()
-                    );
                     let action = new_board.decode_action(action, NORMAL_MODE)
                         .expect(&format!("{} is not a possible move.", action));
                     new_board.make_move(&action);
