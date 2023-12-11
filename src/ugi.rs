@@ -28,24 +28,6 @@ impl Chunks<'_, '_> {
     }
 }
 
-mod chunk {
-    pub fn has_named<const T: usize>(chunks: &[&[&str]], names: [ &str; T ]) -> bool {
-        chunks.iter().any(|chunk| names.contains(&chunk[0]))
-    }
-    
-    pub fn get_raw<const T: usize>(chunks: &[&[&str]], names: [ &str; T ]) -> String {
-        chunks.iter().find(|chunk| names.contains(&chunk[0]))
-            .map(|el| el[1].to_string())
-            .expect("Expected argument to be provided")
-    }
-    
-    pub fn get_int<const T: usize>(chunks: &[&[&str]], names: [ &str; T ]) -> u128 {
-        get_raw(chunks, names)
-            .parse::<u128>()
-            .expect("Expected integer argument")
-    }
-}
-
 pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
     let mut board: Option<Board<T>> = None;
     let mut hashes: Vec<u64> = vec![];

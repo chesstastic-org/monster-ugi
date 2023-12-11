@@ -1,5 +1,4 @@
-use monster_chess::board::{game::{Game, GameResults}, Board, actions::{Action, Move}};
-use std::fmt::Display;
+use monster_chess::board::{game::{Game, GameResults}, Board, actions::Move};
 
 pub struct Engine<const T: usize> {
     pub game: Game<T>,
