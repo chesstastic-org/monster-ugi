@@ -29,7 +29,7 @@ pub struct MoveSelectionResults {
     pub best_move: Move,
 
     /// Evaluation is in terms of centipieces (where one centi-piece is the lowest-value piece of the game)
-    pub evaluation: u64
+    pub evaluation: i32
 }
 
 pub enum InitialPos<'a> {
