@@ -40,7 +40,7 @@ pub enum InitialPos<'a> {
 pub struct Info<'a> {
     pub depth: Option<u32>,
     /// Score is in terms of centipieces (where one centi-piece is the lowest-value piece of the game)
-    pub score: Option<u32>,
+    pub score: Option<i32>,
     pub pv: Option<&'a str>,
     pub time: Option<u128>,
     pub nodes: Option<u64>,
