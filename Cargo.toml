@@ -1,6 +1,6 @@
 [package]
 name = "monster_ugi"
-version = "0.0.14"
+version = "0.0.15"
 edition = "2021"
 license = "MIT"
 description = "A library that connects a chess engine using the monster-chess movegen library to the UGI protocol."

@@ -41,7 +41,10 @@ pub struct Info<'a> {
     pub depth: Option<u32>,
     /// Score is in terms of centipieces (where one centi-piece is the lowest-value piece of the game)
     pub score: Option<u32>,
-    pub pv: Option<&'a str>
+    pub pv: Option<&'a str>,
+    pub time: Option<u128>,
+    pub nodes: Option<u32>,
+    pub nps: Option<u32>
 }
 
 pub trait EngineBehavior<const T: usize> {
@@ -96,19 +99,31 @@ pub trait EngineBehavior<const T: usize> {
 
     fn info(&mut self, info: Info) {
         print!("info");
-        
+    
         if let Some(depth) = info.depth {
-            print!(" depth {depth}");
+            print!(" depth {}", depth);
         }
-
+    
         if let Some(eval) = info.score {
-            print!(" eval cp {eval}");
+            print!(" score cp {}", eval);
+        }
+    
+        if let Some(nodes) = info.nodes {
+            print!(" nodes {}", nodes);
+        }
+        
+        if let Some(nps) = info.nps {
+            print!(" nps {}", nps);
+        }
+    
+        if let Some(time) = info.time {
+            print!(" time {}", time);
         }
 
         if let Some(pv) = info.pv {
-            print!(" pv {pv}");
+            print!(" pv {}", pv);
         }
-
+    
         println!();
     }
 
