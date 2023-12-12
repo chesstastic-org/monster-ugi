@@ -69,7 +69,7 @@ dependencies = [
 
 [[package]]
 name = "monster_ugi"
-version = "0.0.15"
+version = "0.0.16"
 dependencies = [
  "monster_chess",
  "rand",

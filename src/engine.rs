@@ -43,8 +43,8 @@ pub struct Info<'a> {
     pub score: Option<u32>,
     pub pv: Option<&'a str>,
     pub time: Option<u128>,
-    pub nodes: Option<u32>,
-    pub nps: Option<u32>
+    pub nodes: Option<u64>,
+    pub nps: Option<u64>
 }
 
 pub trait EngineBehavior<const T: usize> {
@@ -111,7 +111,7 @@ pub trait EngineBehavior<const T: usize> {
         if let Some(nodes) = info.nodes {
             print!(" nodes {}", nodes);
         }
-        
+
         if let Some(nps) = info.nps {
             print!(" nps {}", nps);
         }
