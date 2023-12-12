@@ -111,7 +111,7 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
             if chunks.has_named([ "p1time", "wtime" ]) {
                 let p1time = chunks.get_int([ "p1time", "wtime" ]).expect("Must have p1time");
                 let p2time = chunks.get_int([ "p2time", "btime" ]).expect("Must have p2time");
-                let p1inc = chunks.get_int([ "p2time", "btime" ]).unwrap_or(0);
+                let p1inc = chunks.get_int([ "p1time", "binc" ]).unwrap_or(0);
                 let p2inc = chunks.get_int([ "p2inc", "binc" ]).unwrap_or(0);
 
                     time_control = TimeControl::Timed(vec![ 
