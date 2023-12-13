@@ -1,3 +1,5 @@
+use std::process;
+
 use monster_chess::board::{game::{Game, GameResults}, Board, actions::Move};
 
 pub struct Engine<const T: usize> {
@@ -71,6 +73,10 @@ pub trait EngineBehavior<const T: usize> {
 
     fn select_move(&mut self, board: &mut Board<T>, time_control: TimeControl, hashes: &Vec<u64>) -> MoveSelectionResults;
     fn stop_search(&mut self);
+
+    fn quit(&mut self) {
+        process::exit(1);
+    }
 
     fn position<'a>(&mut self, engine: &'a Engine<T>, initial_pos: InitialPos<'a>, actions: Vec<String>) -> Board<'a, T> {
         let mut board = match initial_pos {

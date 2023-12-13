@@ -53,6 +53,11 @@ pub fn run_ugi<const T: usize>(mut engine: Engine<T>) {
             continue;
         }
 
+        if line == "quit" {
+            engine.behavior.quit();
+            continue;
+        }
+
         if line.starts_with("position ") {
             line = line.strip_prefix("position ").expect("String dynamics changed throughout spacetime.").to_string();
 
